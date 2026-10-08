@@ -1,10 +1,5 @@
 export const en = {
   titlebar: {
-    options: "Options",
-    addFile: "Add torrent file…",
-    addMagnet: "Add magnet link…",
-    resumeAll: "Resume all",
-    pauseAll: "Pause all",
     minimize: "Minimize",
     maximize: "Maximize",
     close: "Close",
@@ -27,7 +22,7 @@ export const en = {
     seeds: "Seeds",
     peers: "Peers",
     emptyTitle: "Nothing here yet",
-    emptyHint: "Add a .torrent file or a magnet link from Options.",
+    emptyHint: "Add a .torrent file or a magnet link to get started.",
   },
   state: {
     downloading: "Downloading",

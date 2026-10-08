@@ -2,11 +2,6 @@ import type { Messages } from "./en";
 
 export const ru: Messages = {
   titlebar: {
-    options: "Опции",
-    addFile: "Добавить торрент-файл…",
-    addMagnet: "Добавить magnet-ссылку…",
-    resumeAll: "Запустить все",
-    pauseAll: "Приостановить все",
     minimize: "Свернуть",
     maximize: "Развернуть",
     close: "Закрыть",
@@ -29,7 +24,7 @@ export const ru: Messages = {
     seeds: "Сиды",
     peers: "Пиры",
     emptyTitle: "Здесь пока пусто",
-    emptyHint: "Добавьте торрент-файл или magnet-ссылку через меню «Опции».",
+    emptyHint: "Добавьте торрент-файл или magnet-ссылку, чтобы начать.",
   },
   state: {
     downloading: "Загрузка",
