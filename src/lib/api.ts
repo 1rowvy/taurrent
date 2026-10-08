@@ -9,6 +9,7 @@ export interface EngineStatus {
 export interface Settings {
   downloadDir: string;
   notifications: boolean;
+  autoUpdate: boolean;
   /** `null` follows the system language. */
   language: string | null;
 }
@@ -18,5 +19,6 @@ export const api = {
   getSettings: () => invoke<Settings>("get_settings"),
   setDownloadDir: (path: string) => invoke<Settings>("set_download_dir", { path }),
   setNotifications: (enabled: boolean) => invoke<Settings>("set_notifications", { enabled }),
+  setAutoUpdate: (enabled: boolean) => invoke<Settings>("set_auto_update", { enabled }),
   setLanguage: (language: string | null) => invoke<Settings>("set_language", { language }),
 };

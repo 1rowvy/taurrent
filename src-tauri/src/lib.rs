@@ -38,6 +38,16 @@ fn set_notifications(
 }
 
 #[tauri::command]
+fn set_auto_update(
+    settings: tauri::State<'_, SettingsStore>,
+    enabled: bool,
+) -> Result<Settings, String> {
+    settings
+        .set_auto_update(enabled)
+        .map_err(|e| format!("{e:#}"))
+}
+
+#[tauri::command]
 fn set_language(
     settings: tauri::State<'_, SettingsStore>,
     language: Option<String>,
@@ -52,7 +62,12 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_process::init())
         .setup(|app| {
+            #[cfg(desktop)]
+            app.handle()
+                .plugin(tauri_plugin_updater::Builder::new().build())?;
+
             let settings = SettingsStore::load(app.handle())?;
             let engine = tauri::async_runtime::block_on(Engine::start(
                 app.handle(),
@@ -67,6 +82,7 @@ pub fn run() {
             get_settings,
             set_download_dir,
             set_notifications,
+            set_auto_update,
             set_language
         ])
         .run(tauri::generate_context!())

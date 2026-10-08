@@ -1,12 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
 import { Sidebar, type Selection, type StatusFilter } from "@/components/layout/sidebar";
 import { Titlebar } from "@/components/layout/titlebar";
+import { UpdateCard } from "@/components/layout/update-card";
 import { TorrentTable } from "@/components/torrents/torrent-table";
 import { SpeedChart } from "@/components/transfer/speed-chart";
 import { TransferStats } from "@/components/transfer/transfer-stats";
 import { useSettings } from "@/hooks/use-settings";
 import { useTheme } from "@/hooks/use-theme";
 import { useTorrents } from "@/hooks/use-torrents";
+import { useUpdater } from "@/hooks/use-updater";
 import { applyLanguage } from "@/i18n";
 import type { TorrentSummary } from "@/lib/types";
 import { SettingsView } from "@/views/settings-view";
@@ -23,7 +25,9 @@ function App() {
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const { theme, setTheme } = useTheme();
   const { torrents, stats, history } = useTorrents();
-  const { settings, error, setDownloadDir, setNotifications, setLanguage } = useSettings();
+  const { settings, error, setDownloadDir, setNotifications, setAutoUpdate, setLanguage } =
+    useSettings();
+  const updater = useUpdater(settings?.autoUpdate);
 
   useEffect(() => applyLanguage(settings?.language), [settings?.language]);
 
@@ -53,6 +57,7 @@ function App() {
           onDarkChange={(dark) => setTheme(dark ? "dark" : "light")}
           notifications={settings?.notifications}
           onNotificationsChange={setNotifications}
+          footer={<UpdateCard state={updater.state} onInstall={updater.install} />}
         />
 
         <main className="mr-2 mb-2 flex min-w-0 flex-1 flex-col overflow-hidden rounded-xl bg-card">
@@ -62,6 +67,11 @@ function App() {
               error={error}
               onDownloadDirChange={setDownloadDir}
               onLanguageChange={setLanguage}
+              onAutoUpdateChange={setAutoUpdate}
+              appVersion={updater.version}
+              updater={updater.state}
+              onCheckUpdates={updater.checkNow}
+              onInstallUpdate={updater.install}
             />
           ) : (
             <>

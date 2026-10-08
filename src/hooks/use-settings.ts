@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { api, type Settings } from "@/lib/api";
 import { isDemo } from "@/hooks/use-torrents";
 
-const DEMO_SETTINGS: Settings = { downloadDir: "~/Downloads", notifications: true, language: null };
+const DEMO_SETTINGS: Settings = { downloadDir: "~/Downloads", notifications: true, autoUpdate: true, language: null };
 
 export function useSettings() {
   const [settings, setSettings] = useState<Settings | null>(isDemo ? DEMO_SETTINGS : null);
@@ -32,6 +32,8 @@ export function useSettings() {
     setDownloadDir: (path: string) => run(() => api.setDownloadDir(path), { downloadDir: path }),
     setNotifications: (enabled: boolean) =>
       run(() => api.setNotifications(enabled), { notifications: enabled }),
+    setAutoUpdate: (enabled: boolean) =>
+      run(() => api.setAutoUpdate(enabled), { autoUpdate: enabled }),
     setLanguage: (language: string | null) =>
       run(() => api.setLanguage(language), { language }),
   };

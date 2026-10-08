@@ -64,6 +64,18 @@ export const ru: Messages = {
     language: "Язык",
     languageSystem: "Как в системе",
   },
+  updates: {
+    title: "Обновления",
+    currentVersion: "Текущая версия: {{version}}",
+    autoCheck: "Проверять обновления при запуске",
+    checkNow: "Проверить сейчас",
+    checking: "Проверяем обновления…",
+    upToDate: "У вас последняя версия.",
+    available: "Доступна версия {{version}}",
+    install: "Обновить и перезапустить",
+    downloading: "Загрузка обновления…",
+    error: "Не удалось обновиться: {{message}}",
+  },
   units: {
     bytes: ["Б", "КБ", "МБ", "ГБ", "ТБ"],
     perSecond: "/с",

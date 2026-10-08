@@ -62,6 +62,18 @@ export const en = {
     language: "Language",
     languageSystem: "System",
   },
+  updates: {
+    title: "Updates",
+    currentVersion: "Current version: {{version}}",
+    autoCheck: "Check for updates on startup",
+    checkNow: "Check now",
+    checking: "Checking for updates…",
+    upToDate: "You're on the latest version.",
+    available: "Version {{version}} is available",
+    install: "Update and restart",
+    downloading: "Downloading update…",
+    error: "Update failed: {{message}}",
+  },
   units: {
     bytes: ["B", "KB", "MB", "GB", "TB"],
     perSecond: "/s",

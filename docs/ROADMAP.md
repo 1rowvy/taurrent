@@ -48,6 +48,12 @@ React UI ──invoke()──▶ Tauri commands ──▶ Engine (librqbit Sessi
 - [x] Локализация ru / en (i18next, `src/i18n/`): язык из системы или выбранный в настройках, числа и единицы по локали
 - [x] Демо-данные: в браузере (`npm run dev`) или `VITE_DEMO=1 npm run tauri dev`
 
+### Автообновление ✅
+- [x] plugin-updater + подпись minisign, `latest.json` из GitHub Releases (`rowvy/taurrent`)
+- [x] Проверка при запуске (отключается в настройках), «Проверить сейчас», плашка «Доступна версия X» в сайдбаре, установка и перезапуск по кнопке
+- [ ] Добавить секреты `TAURI_SIGNING_PRIVATE_KEY` / `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` в репозиторий
+- [ ] Проверить цикл обновления end-to-end на двух релизах (Linux AppImage, Windows NSIS)
+
 ### M1. Ядро: добавление и управление торрентами
 - [ ] Команды: `add_magnet`, `add_torrent_file`, `list_torrents`, `pause`, `resume`, `remove(delete_files)`
 - [ ] При добавлении передавать `AddTorrentOptions::output_folder` = папка из настроек (дефолт сессии librqbit задаётся только при старте)
@@ -92,7 +98,6 @@ React UI ──invoke()──▶ Tauri commands ──▶ Engine (librqbit Sessi
 - Планировщик скоростей (альтернативные лимиты по расписанию)
 - RSS с фильтрами авто-загрузки
 - Создание `.torrent`
-- Автообновление (plugin-updater + подпись)
 - macOS-сборка (universal, подпись/нотаризация)
 - Удалённое управление (HTTP API librqbit)
 

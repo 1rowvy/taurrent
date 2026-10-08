@@ -1,9 +1,11 @@
 import { open } from "@tauri-apps/plugin-dialog";
-import { FolderOpen } from "lucide-react";
+import { FolderOpen, RefreshCw } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import type { UpdaterState } from "@/hooks/use-updater";
 import { LANGUAGES } from "@/i18n";
 import type { Settings } from "@/lib/api";
 import { cn } from "@/lib/utils";
@@ -13,6 +15,11 @@ interface SettingsViewProps {
   error: string | null;
   onDownloadDirChange: (path: string) => void;
   onLanguageChange: (language: string | null) => void;
+  onAutoUpdateChange: (enabled: boolean) => void;
+  appVersion: string | null;
+  updater: UpdaterState;
+  onCheckUpdates: () => void;
+  onInstallUpdate: () => void;
 }
 
 export function SettingsView({
@@ -20,6 +27,11 @@ export function SettingsView({
   error,
   onDownloadDirChange,
   onLanguageChange,
+  onAutoUpdateChange,
+  appVersion,
+  updater,
+  onCheckUpdates,
+  onInstallUpdate,
 }: SettingsViewProps) {
   const { t } = useTranslation();
 
@@ -68,7 +80,70 @@ export function SettingsView({
         </div>
       </section>
 
+      <section className="grid gap-3">
+        <Label>{t("updates.title")}</Label>
+        {appVersion && (
+          <p className="text-sm text-muted-foreground">
+            {t("updates.currentVersion", { version: appVersion })}
+          </p>
+        )}
+        <label className="flex w-fit cursor-pointer items-center gap-3 text-sm">
+          <Switch
+            checked={settings?.autoUpdate ?? false}
+            disabled={!settings}
+            onCheckedChange={onAutoUpdateChange}
+          />
+          {t("updates.autoCheck")}
+        </label>
+        <div className="flex items-center gap-3">
+          {updater.status === "available" ? (
+            <Button onClick={onInstallUpdate}>{t("updates.install")}</Button>
+          ) : (
+            <Button
+              variant="outline"
+              onClick={onCheckUpdates}
+              disabled={updater.status === "checking" || updater.status === "downloading"}
+            >
+              <RefreshCw className={cn(updater.status === "checking" && "animate-spin")} />
+              {t("updates.checkNow")}
+            </Button>
+          )}
+          <UpdateStatus state={updater} />
+        </div>
+      </section>
+
       {error && <p className="text-sm text-destructive">{error}</p>}
     </div>
   );
+}
+
+function UpdateStatus({ state }: { state: UpdaterState }) {
+  const { t } = useTranslation();
+  switch (state.status) {
+    case "checking":
+      return <span className="text-sm text-muted-foreground">{t("updates.checking")}</span>;
+    case "upToDate":
+      return <span className="text-sm text-muted-foreground">{t("updates.upToDate")}</span>;
+    case "available":
+      return (
+        <span className="text-sm font-semibold text-primary">
+          {t("updates.available", { version: state.version })}
+        </span>
+      );
+    case "downloading":
+      return (
+        <span className="text-sm text-muted-foreground">
+          {t("updates.downloading")}
+          {state.progress != null && ` ${Math.round(state.progress * 100)}%`}
+        </span>
+      );
+    case "error":
+      return (
+        <span className="text-sm text-destructive">
+          {t("updates.error", { message: state.message })}
+        </span>
+      );
+    default:
+      return null;
+  }
 }

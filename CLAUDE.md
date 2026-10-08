@@ -24,6 +24,15 @@ cargo test --manifest-path src-tauri/Cargo.toml [test_name]
 
 CI (`.github/workflows/ci.yml`) runs exactly: `npm run build`, `cargo fmt --check`, `cargo clippy -D warnings`, `cargo test`, then `tauri build` on Linux and Windows. Pushing a `v*` tag runs `release.yml`, which creates a draft GitHub release with the bundles. There are no frontend tests yet.
 
+### Auto-update
+
+- `tauri-plugin-updater` reads `https://github.com/rowvy/taurrent/releases/latest/download/latest.json` and verifies bundles against `plugins.updater.pubkey` in `tauri.conf.json`.
+- Signed updater artifacts are enabled only in `src-tauri/tauri.release.conf.json`. `release.yml` passes it via `--config` and signs with the `TAURI_SIGNING_PRIVATE_KEY` secret.
+- Plain `tauri build` (local and CI) therefore needs no key. Don't move `createUpdaterArtifacts` into the main config, or every unsigned build fails.
+- The private key is at `~/.tauri/taurrent.key` on the maintainer's machine. Never commit it.
+- `latest.json` only resolves once the draft release is published.
+- The version to bump lives in `tauri.conf.json` (also `package.json` and `Cargo.toml`).
+
 ## Architecture
 
 ### Backend (`src-tauri/src/`)
@@ -49,6 +58,7 @@ CI (`.github/workflows/ci.yml`) runs exactly: `npm run build`, `cargo fmt --chec
   - `i18next.d.ts` makes `t()` keys type-checked.
   - The language comes from `settings.language` (`null` means follow the system) and is applied in `App` through `applyLanguage`.
   - `lib/format.ts` formats sizes, speeds, durations and ratios using `i18n.language` and the `units.*` strings. Always use these helpers for user-visible numbers.
+- `hooks/use-updater.ts` checks for updates on startup when `settings.autoUpdate` is on (never in demo mode). Installing is always user-initiated, from `UpdateCard` in the sidebar or from Settings, and is followed by `relaunch()` from `plugin-process`.
 - The theme lives in `hooks/use-theme.ts`: it toggles the `.dark` class on `<html>`, persists to localStorage, and defaults to dark.
 
 ### Styling

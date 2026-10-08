@@ -16,6 +16,9 @@ pub struct Settings {
     /// Show a system notification when a download finishes.
     #[serde(default = "default_true")]
     pub notifications: bool,
+    /// Check for app updates on startup.
+    #[serde(default = "default_true")]
+    pub auto_update: bool,
     /// UI language code; `None` follows the system language.
     #[serde(default)]
     pub language: Option<String>,
@@ -50,6 +53,7 @@ impl SettingsStore {
                     .download_dir()
                     .context("resolving download dir")?,
                 notifications: true,
+                auto_update: true,
                 language: None,
             },
             Err(e) => return Err(e).with_context(|| format!("reading {}", path.display())),
@@ -74,6 +78,10 @@ impl SettingsStore {
 
     pub fn set_notifications(&self, enabled: bool) -> anyhow::Result<Settings> {
         self.update(|s| s.notifications = enabled)
+    }
+
+    pub fn set_auto_update(&self, enabled: bool) -> anyhow::Result<Settings> {
+        self.update(|s| s.auto_update = enabled)
     }
 
     pub fn set_language(&self, language: Option<String>) -> anyhow::Result<Settings> {

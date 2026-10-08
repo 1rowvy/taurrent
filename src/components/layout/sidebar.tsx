@@ -25,6 +25,8 @@ interface SidebarProps {
   onDarkChange: (dark: boolean) => void;
   notifications: boolean | undefined;
   onNotificationsChange: (enabled: boolean) => void;
+  /** Rendered above the settings section (e.g. an update notice). */
+  footer?: React.ReactNode;
 }
 
 export function Sidebar({
@@ -35,6 +37,7 @@ export function Sidebar({
   onDarkChange,
   notifications,
   onNotificationsChange,
+  footer,
 }: SidebarProps) {
   const { t } = useTranslation();
 
@@ -54,7 +57,9 @@ export function Sidebar({
       </Section>
 
 
-      <Section title={t("sidebar.settings")} className="mt-auto">
+      <div className="mt-auto">{footer}</div>
+
+      <Section title={t("sidebar.settings")}>
         <Item
           icon={Settings2}
           label={t("sidebar.settings")}
