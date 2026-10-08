@@ -14,7 +14,7 @@ npm run tauri build   # build installers into src-tauri/target/release/bundle
 
 ## Releases
 
-1. Bump `version` in `src-tauri/tauri.conf.json` (and `package.json`, `src-tauri/Cargo.toml`).
+1. Bump `version` in `package.json` — the app and `tauri.conf.json` read it from there (optionally also `src-tauri/Cargo.toml`).
 2. Push a `v*` tag (e.g. `v0.2.0`). GitHub Actions builds signed Linux and Windows bundles plus `latest.json` and attaches them to a draft release.
 3. Publish the draft — installed apps pick up the update from `releases/latest/download/latest.json`.
 

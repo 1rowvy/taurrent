@@ -49,7 +49,7 @@ React UI ──invoke()──▶ Tauri commands ──▶ Engine (librqbit Sessi
 - [x] Демо-данные: в браузере (`npm run dev`) или `VITE_DEMO=1 npm run tauri dev`
 
 ### Автообновление ✅
-- [x] plugin-updater + подпись minisign, `latest.json` из GitHub Releases (`rowvy/taurrent`)
+- [x] plugin-updater + подпись minisign, `latest.json` из GitHub Releases (`1rowvy/taurrent`)
 - [x] Проверка при запуске (отключается в настройках), «Проверить сейчас», плашка «Доступна версия X» в сайдбаре, установка и перезапуск по кнопке
 - [ ] Добавить секреты `TAURI_SIGNING_PRIVATE_KEY` / `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` в репозиторий
 - [ ] Проверить цикл обновления end-to-end на двух релизах (Linux AppImage, Windows NSIS)

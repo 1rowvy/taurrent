@@ -26,12 +26,12 @@ CI (`.github/workflows/ci.yml`) runs exactly: `npm run build`, `cargo fmt --chec
 
 ### Auto-update
 
-- `tauri-plugin-updater` reads `https://github.com/rowvy/taurrent/releases/latest/download/latest.json` and verifies bundles against `plugins.updater.pubkey` in `tauri.conf.json`.
+- `tauri-plugin-updater` reads `https://github.com/1rowvy/taurrent/releases/latest/download/latest.json` and verifies bundles against `plugins.updater.pubkey` in `tauri.conf.json`.
 - Signed updater artifacts are enabled only in `src-tauri/tauri.release.conf.json`. `release.yml` passes it via `--config` and signs with the `TAURI_SIGNING_PRIVATE_KEY` secret.
 - Plain `tauri build` (local and CI) therefore needs no key. Don't move `createUpdaterArtifacts` into the main config, or every unsigned build fails.
 - The private key is at `~/.tauri/taurrent.key` on the maintainer's machine. Never commit it.
 - `latest.json` only resolves once the draft release is published.
-- The version to bump lives in `tauri.conf.json` (also `package.json` and `Cargo.toml`).
+- The app version lives in `package.json`. `tauri.conf.json` points at it (`"version": "../package.json"`), and Vite exposes it as `__APP_VERSION__`, which the titlebar and Settings display. `Cargo.toml` has its own crate version, which can be bumped alongside.
 
 ## Architecture
 

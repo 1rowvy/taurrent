@@ -14,6 +14,9 @@ export function Titlebar() {
       className="flex h-11 shrink-0 items-center pl-5 text-sm"
     >
       <Logo className="pointer-events-none text-[0.95rem] [&_svg]:text-primary" />
+      <span className="pointer-events-none ml-2 rounded-md bg-muted px-1.5 py-0.5 text-[0.65rem] font-semibold text-muted-foreground tabular-nums">
+        v{__APP_VERSION__}
+      </span>
 
       <div data-tauri-drag-region className="h-full flex-1" />
 

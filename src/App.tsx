@@ -68,7 +68,6 @@ function App() {
               onDownloadDirChange={setDownloadDir}
               onLanguageChange={setLanguage}
               onAutoUpdateChange={setAutoUpdate}
-              appVersion={updater.version}
               updater={updater.state}
               onCheckUpdates={updater.checkNow}
               onInstallUpdate={updater.install}

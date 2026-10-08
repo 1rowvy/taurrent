@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { getVersion } from "@tauri-apps/api/app";
 import { relaunch } from "@tauri-apps/plugin-process";
 import { check, type Update } from "@tauri-apps/plugin-updater";
 import { isDemo } from "@/hooks/use-torrents";
@@ -19,14 +18,8 @@ export type UpdaterState =
  */
 export function useUpdater(autoCheck: boolean | undefined) {
   const [state, setState] = useState<UpdaterState>({ status: "idle" });
-  const [version, setVersion] = useState<string | null>(null);
   const update = useRef<Update | null>(null);
   const autoChecked = useRef(false);
-
-  useEffect(() => {
-    if (isDemo) return;
-    getVersion().then(setVersion);
-  }, []);
 
   const checkNow = useCallback(async () => {
     if (isDemo) {
@@ -77,5 +70,5 @@ export function useUpdater(autoCheck: boolean | undefined) {
     }
   }, []);
 
-  return { state, version, checkNow, install };
+  return { state, checkNow, install };
 }

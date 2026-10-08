@@ -1,7 +1,7 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "Taurrent",
-  "version": "0.1.0",
+  "version": "../package.json",
   "identifier": "com.rowvy.taurrent",
   "build": {
     "beforeDevCommand": "npm run dev",
@@ -41,7 +41,7 @@
     "updater": {
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDc2QUQxMDMwMkFFODc0RDUKUldUVmRPZ3FNQkN0ZGxIQkVReVcxTE91eWRDVXVWVEk0NzN5TzJmTDJmdk9DaXhHVXMzeWF5NGwK",
       "endpoints": [
-        "https://github.com/rowvy/taurrent/releases/latest/download/latest.json"
+        "https://github.com/1rowvy/taurrent/releases/latest/download/latest.json"
       ]
     }
   }

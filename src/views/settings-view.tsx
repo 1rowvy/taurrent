@@ -16,7 +16,6 @@ interface SettingsViewProps {
   onDownloadDirChange: (path: string) => void;
   onLanguageChange: (language: string | null) => void;
   onAutoUpdateChange: (enabled: boolean) => void;
-  appVersion: string | null;
   updater: UpdaterState;
   onCheckUpdates: () => void;
   onInstallUpdate: () => void;
@@ -28,7 +27,6 @@ export function SettingsView({
   onDownloadDirChange,
   onLanguageChange,
   onAutoUpdateChange,
-  appVersion,
   updater,
   onCheckUpdates,
   onInstallUpdate,
@@ -82,11 +80,9 @@ export function SettingsView({
 
       <section className="grid gap-3">
         <Label>{t("updates.title")}</Label>
-        {appVersion && (
-          <p className="text-sm text-muted-foreground">
-            {t("updates.currentVersion", { version: appVersion })}
-          </p>
-        )}
+        <p className="text-sm text-muted-foreground">
+          {t("updates.currentVersion", { version: __APP_VERSION__ })}
+        </p>
         <label className="flex w-fit cursor-pointer items-center gap-3 text-sm">
           <Switch
             checked={settings?.autoUpdate ?? false}
