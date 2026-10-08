@@ -38,11 +38,19 @@ React UI ──invoke()──▶ Tauri commands ──▶ Engine (librqbit Sessi
 - [x] librqbit подключён, сессия стартует с fastresume и JSON-персистентностью в `app_data_dir`
 - [x] CI: проверки + сборка Linux/Windows, релизы по тегу
 
+### Дизайн ✅
+- [x] Лого: знак «T + стрелка загрузки», вордмарк Plus Jakarta Sans 700 (`assets/brand/`), иконки приложения
+- [x] Тёмная/светлая тема, пастельные плитки (mint / sky / lilac), сайдбар с иконками
+- [x] Дашборд: плитки Uploaded / Downloaded / Disk, drop-зона, последние торренты
+- [x] Экран Torrents с фильтрами по статусу, поиск в топбаре
+- [x] Демо-данные: в браузере (`npm run dev`) или `VITE_DEMO=1 npm run tauri dev`
+
 ### M1. Ядро: добавление и управление торрентами
 - [ ] Команды: `add_magnet`, `add_torrent_file`, `list_torrents`, `pause`, `resume`, `remove(delete_files)`
 - [ ] При добавлении передавать `AddTorrentOptions::output_folder` = папка из настроек (дефолт сессии librqbit задаётся только при старте)
 - [ ] Модель `TorrentSummary`: id, info hash, имя, размер, прогресс, статус, скорость ↓/↑, пиры, ETA, ratio
-- [ ] Фоновый эмиттер статистики (`torrents:update`)
+- [ ] Фоновый эмиттер статистики (`torrents:update`), команды `session_stats` и `disk_space` для плиток
+- [ ] Подключить к UI: кнопки Pause/Resume/Stop/Info, меню строки, FAB и Browse (сейчас — только вёрстка)
 - [ ] Восстановление торрентов после перезапуска (проверить fastresume)
 
 ### M2. Основной интерфейс
@@ -71,7 +79,6 @@ React UI ──invoke()──▶ Tauri commands ──▶ Engine (librqbit Sessi
 - [ ] Ассоциация `.torrent` и схемы `magnet:` (plugin-deep-link + plugin-single-instance — передача ссылки в уже запущенный экземпляр)
 
 ### Выпуск v0.1
-- [ ] Иконка и брендинг
 - [ ] Ручной smoke-тест на Linux и Windows
 - [ ] Тег `v0.1.0` → черновик релиза с артефактами
 
@@ -92,5 +99,4 @@ React UI ──invoke()──▶ Tauri commands ──▶ Engine (librqbit Sessi
 ## Открытые вопросы
 
 - Лицензия проекта
-- Иконка / визуальный стиль
 - Подпись Windows-сборок (SmartScreen)

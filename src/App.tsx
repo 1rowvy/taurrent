@@ -1,58 +1,53 @@
-import { useEffect, useState } from "react";
-import { Plus, RefreshCw, Settings } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { SettingsDialog } from "@/components/settings-dialog";
-import { api, type EngineStatus } from "@/lib/api";
+import { useState } from "react";
+import { Plus } from "lucide-react";
+import { Sidebar, type View } from "@/components/layout/sidebar";
+import { Topbar } from "@/components/layout/topbar";
+import { useDashboard } from "@/hooks/use-dashboard";
+import { useTheme } from "@/hooks/use-theme";
+import { DashboardView } from "@/views/dashboard-view";
+import { SettingsView } from "@/views/settings-view";
+import { TorrentsView } from "@/views/torrents-view";
 
 function App() {
-  const [status, setStatus] = useState<EngineStatus | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [view, setView] = useState<View>("dashboard");
+  const [query, setQuery] = useState("");
+  const { theme, toggle } = useTheme();
+  const { torrents, stats, disk } = useDashboard();
 
-  async function refresh() {
-    try {
-      setStatus(await api.engineStatus());
-      setError(null);
-    } catch (e) {
-      setError(String(e));
-    }
-  }
-
-  useEffect(() => {
-    refresh();
-  }, []);
+  const q = query.trim().toLowerCase();
+  const filtered = q ? torrents.filter((t) => t.name.toLowerCase().includes(q)) : torrents;
 
   return (
-    <div className="flex h-screen flex-col bg-background text-foreground">
-      <header className="flex items-center justify-between border-b px-4 py-2">
-        <h1 className="text-lg font-semibold">Taurrent</h1>
-        <div className="flex gap-2">
-          <Button size="sm" disabled>
-            <Plus /> Add torrent
-          </Button>
-          <Button size="sm" variant="outline" onClick={refresh}>
-            <RefreshCw />
-          </Button>
-          <Button size="sm" variant="outline" onClick={() => setSettingsOpen(true)}>
-            <Settings />
-          </Button>
-        </div>
-      </header>
+    <div className="flex h-full bg-background text-foreground">
+      <Sidebar view={view} onViewChange={setView} theme={theme} onToggleTheme={toggle} />
 
-      <main className="flex flex-1 items-center justify-center text-sm text-muted-foreground">
-        {error ? (
-          <span className="text-destructive">{error}</span>
-        ) : status ? (
-          <span>
-            Engine v{status.version} · port {status.listenPort ?? "—"} ·{" "}
-            {status.torrentCount} torrents
-          </span>
-        ) : (
-          <span>Starting engine…</span>
-        )}
-      </main>
+      <div className="flex min-w-0 flex-1 flex-col">
+        <Topbar query={query} onQueryChange={setQuery} stats={stats} />
 
-      <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
+        <main className="relative mr-4 mb-4 min-h-0 flex-1 overflow-hidden rounded-[2rem] bg-card">
+          <div className="h-full overflow-y-auto p-7 pb-24">
+            {view === "dashboard" && (
+              <DashboardView
+                torrents={filtered}
+                stats={stats}
+                disk={disk}
+                onSeeAll={() => setView("torrents")}
+              />
+            )}
+            {view === "torrents" && <TorrentsView torrents={filtered} />}
+            {view === "settings" && <SettingsView />}
+          </div>
+
+          {view !== "settings" && (
+            <button
+              className="absolute right-6 bottom-6 grid size-13 place-items-center rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/30 transition-transform hover:scale-105"
+              aria-label="Add torrent"
+            >
+              <Plus className="size-6" />
+            </button>
+          )}
+        </main>
+      </div>
     </div>
   );
 }
