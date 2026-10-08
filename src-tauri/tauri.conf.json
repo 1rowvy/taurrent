@@ -35,7 +35,18 @@
       "icons/icon.ico"
     ],
     "category": "Utility",
-    "shortDescription": "BitTorrent client"
+    "shortDescription": "BitTorrent client",
+    "fileAssociations": [
+      {
+        "ext": [
+          "torrent"
+        ],
+        "mimeType": "application/x-bittorrent",
+        "name": "Torrent",
+        "description": "BitTorrent file",
+        "role": "Viewer"
+      }
+    ]
   },
   "plugins": {
     "updater": {
@@ -43,6 +54,13 @@
       "endpoints": [
         "https://github.com/1rowvy/taurrent/releases/latest/download/latest.json"
       ]
+    },
+    "deep-link": {
+      "desktop": {
+        "schemes": [
+          "magnet"
+        ]
+      }
     }
   }
 }

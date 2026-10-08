@@ -38,9 +38,17 @@ CI (`.github/workflows/ci.yml`) runs exactly: `npm run build`, `cargo fmt --chec
 ### Backend (`src-tauri/src/`)
 
 - `lib.rs` — Tauri builder, all `#[tauri::command]`s, and `setup`. `setup` loads `SettingsStore`, then starts `Engine` with `block_on`, and registers both as managed state. Commands return `Result<T, String>`, built with `format!("{e:#}")` so the anyhow context chain reaches the UI.
-- `engine.rs` — wraps `librqbit::Session`. It uses fastresume and JSON persistence in `app_data_dir/session`. **librqbit fixes the session's default output folder at startup**, so the user's download folder from settings must be passed per torrent through `AddTorrentOptions::output_folder`.
+- `engine.rs` — wraps `librqbit::Session`. It uses fastresume and JSON persistence in `app_data_dir/session`, and maps librqbit stats to `TorrentSummary` (the shape in `src/lib/types.ts`).
+  - **librqbit fixes the session's default output folder at startup**, so the user's download folder from settings must be passed per torrent through `AddTorrentOptions::output_folder`.
+  - An explicit `output_folder` skips librqbit's per-torrent sub-folder for multi-file torrents. When the folder differs from the session default, `add_to` resolves metadata with `list_only` first and picks the sub-folder itself.
+  - The add dialog is two-phase: `resolve_magnet` / `resolve_torrent_file` fetch metadata with `list_only` and keep it in `Engine::pending` (keyed by info hash), then `add_resolved` adds it with the chosen folder, file selection and paused flag, or `discard_resolved` drops it. A failed `add_resolved` puts the metadata back so the user can retry.
+  - A task spawned in `setup` calls `Engine::tick` every second and emits the snapshot (torrents, totals, 60-sample speed history) as `torrents:update`, plus `torrent:completed` (torrent name) for downloads that finished. Only torrents seen in the downloading state count, so restoring complete torrents doesn't notify.
+  - `Engine::details` (files with per-file progress, peers, trackers, output folder) backs the details panel; the frontend polls it via `hooks/use-torrent-details.ts` for the focused torrent.
+- `tray.rs` — tray icon and menu (show/hide, pause/resume all, quit). Labels come from the frontend via `set_tray_labels`. `on_window_event` hides the window on close when `closeToTray` is on and the tray exists; quitting goes through `tray::quit`, which stops the session first.
+- `open_requests.rs` — `magnet:` links and `.torrent` paths from argv (first launch, or forwarded by `tauri-plugin-single-instance`, which must stay the first plugin registered). They queue in `OpenRequests`; the backend emits `open:requested` and the frontend drains the queue with `take_open_requests`, so nothing is lost before the UI listens. Associations are declared in `tauri.conf.json` (`bundle.fileAssociations`, `plugins.deep-link`).
 - `settings.rs` — app settings stored as JSON in `app_config_dir/settings.json` and written atomically (tmp file + rename). Every mutation goes through `update()`.
   - New fields need `#[serde(default)]` so old files still parse.
+  - `connection` (port, UPnP, DHT, peer limit) is read only when the engine starts (`engine_options` in `lib.rs`); the UI compares it with the startup values and offers a restart. `limits` apply live through `Engine::set_limits`.
   - Each field must also be mirrored in `Settings` in `src/lib/api.ts` and in `DEMO_SETTINGS` in `src/hooks/use-settings.ts`.
 - librqbit is built with `default-features = false, features = ["rust-tls"]`, so there is no OpenSSL dependency, which matters for Windows CI.
 - Plugin and window permissions are declared in `capabilities/default.json`. A new plugin API or window call fails at runtime without a matching entry there.
@@ -49,9 +57,13 @@ CI (`.github/workflows/ci.yml`) runs exactly: `npm run build`, `cargo fmt --chec
 
 - `App.tsx` owns the view state: the sidebar `Selection` (a status filter or settings) and the selected torrent. It composes `Titlebar`, `Sidebar`, `TorrentTable`, `SpeedChart` and `TransferStats`.
 - `lib/api.ts` — typed `invoke` wrappers. `lib/types.ts` is the torrent data contract the backend is expected to produce (`TorrentSummary`, speed samples).
+- `components/torrents/torrent-table.tsx` sorts (persisted in localStorage), virtualizes rows with `@tanstack/react-virtual`, and handles multi-select. `App` owns the selection set and the focused torrent (shown in `TransferStats`); row actions take arrays of ids.
+- `components/details/details-panel.tsx` is the bottom panel with General / Files / Peers / Trackers tabs.
+- `hooks/use-system-integration.ts` handles open requests (queued into the add dialog), tray labels on language change, and sends the completion notifications (the frontend owns i18n, so notifications are sent from JS).
+- `hooks/use-torrent-drop.ts` listens to the webview's drag-drop events for `.torrent` files.
+- `hooks/use-torrents.ts` loads `list_torrents`, then follows `torrents:update`, and exposes the torrent actions (add, pause, resume, remove). Action errors surface as sonner toasts from `App`.
 - **Demo mode:** `hooks/use-torrents.ts` exports `isDemo = !isTauri() || VITE_DEMO === "1"`.
-  - In demo mode the hooks serve animated sample data (`lib/demo.ts`), and settings changes stay in memory.
-  - The real engine is not wired to the UI yet (milestone M1), so outside demo mode the torrent list is empty.
+  - In demo mode the hooks serve animated sample data (`lib/demo.ts`). Settings changes, pause/resume/remove and the add dialog (always previewing `demoPreview`) stay in memory. Adding by path without the dialog (dropping several files) shows a "not available in demo" error.
 - The custom titlebar (`components/layout/titlebar.tsx`) replaces native decorations (`"decorations": false` in `tauri.conf.json`). Dragging relies on `data-tauri-drag-region` plus the `core:window:*` permissions.
 - **i18n** (`src/i18n/`) uses i18next with English and Russian.
   - `en.ts` is the source of truth. `ru.ts` is typed as `Messages`, so a missing Russian key is a type error.

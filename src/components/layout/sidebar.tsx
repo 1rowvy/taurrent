@@ -25,6 +25,8 @@ interface SidebarProps {
   onDarkChange: (dark: boolean) => void;
   notifications: boolean | undefined;
   onNotificationsChange: (enabled: boolean) => void;
+  /** Rendered at the top (the add-torrent button). */
+  header?: React.ReactNode;
   /** Rendered above the settings section (e.g. an update notice). */
   footer?: React.ReactNode;
 }
@@ -37,12 +39,14 @@ export function Sidebar({
   onDarkChange,
   notifications,
   onNotificationsChange,
+  header,
   footer,
 }: SidebarProps) {
   const { t } = useTranslation();
 
   return (
     <aside className="flex w-56 shrink-0 flex-col gap-7 overflow-y-auto px-3 pt-4 pb-5">
+      {header}
       <Section title={t("sidebar.overview")}>
         {STATUSES.map((s) => (
           <Item
