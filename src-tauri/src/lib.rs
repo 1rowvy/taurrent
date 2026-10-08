@@ -37,6 +37,16 @@ fn set_notifications(
         .map_err(|e| format!("{e:#}"))
 }
 
+#[tauri::command]
+fn set_language(
+    settings: tauri::State<'_, SettingsStore>,
+    language: Option<String>,
+) -> Result<Settings, String> {
+    settings
+        .set_language(language)
+        .map_err(|e| format!("{e:#}"))
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -56,7 +66,8 @@ pub fn run() {
             engine_status,
             get_settings,
             set_download_dir,
-            set_notifications
+            set_notifications,
+            set_language
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

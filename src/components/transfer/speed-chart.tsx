@@ -1,4 +1,5 @@
 import { useId, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { formatSpeed } from "@/lib/format";
 import type { SpeedSample } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -8,10 +9,10 @@ const TOP_PAD = 12; // % of height kept free above the peak
 
 type Series = "down" | "up";
 
-const SERIES: { id: Series; label: string; color: string; dot: string }[] = [
-  { id: "down", label: "Download", color: "var(--primary)", dot: "bg-primary" },
-  { id: "up", label: "Upload", color: "var(--upload)", dot: "bg-upload" },
-];
+const SERIES = [
+  { id: "down", label: "transfer.download", color: "var(--primary)", dot: "bg-primary" },
+  { id: "up", label: "transfer.upload", color: "var(--upload)", dot: "bg-upload" },
+] as const;
 
 /** Catmull-Rom spline through the points, as an SVG path in a 0..100 box. */
 function smoothPath(points: [number, number][]): string {
@@ -30,6 +31,7 @@ function smoothPath(points: [number, number][]): string {
 }
 
 export function SpeedChart({ history }: { history: SpeedSample[] }) {
+  const { t } = useTranslation();
   const [visible, setVisible] = useState<Record<Series, boolean>>({ down: true, up: true });
   const gradientId = useId();
 
@@ -47,7 +49,7 @@ export function SpeedChart({ history }: { history: SpeedSample[] }) {
     <div className="flex min-w-0 flex-1 flex-col">
       <div className="mb-3 flex items-center justify-between">
         <h3 className="text-[0.6rem] font-bold tracking-[0.14em] text-muted-foreground/70 uppercase">
-          Transfer speed
+          {t("transfer.speed")}
         </h3>
         <div className="flex gap-1 rounded-md bg-muted p-0.5">
           {SERIES.map((s) => (
@@ -60,7 +62,7 @@ export function SpeedChart({ history }: { history: SpeedSample[] }) {
               )}
             >
               <span className={cn("size-1.5 rounded-full", s.dot, !visible[s.id] && "opacity-40")} />
-              {s.label}
+              {t(s.label)}
             </button>
           ))}
         </div>

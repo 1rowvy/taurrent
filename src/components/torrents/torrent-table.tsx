@@ -7,6 +7,8 @@ import {
   ContextMenuSeparator,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
+import type { TFunction } from "i18next";
+import { useTranslation } from "react-i18next";
 import { formatBytes, formatEta } from "@/lib/format";
 import type { TorrentSummary } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -21,6 +23,8 @@ interface TorrentTableProps {
 }
 
 export function TorrentTable({ torrents, selectedId, onSelect }: TorrentTableProps) {
+  const { t } = useTranslation();
+
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <div
@@ -29,28 +33,28 @@ export function TorrentTable({ torrents, selectedId, onSelect }: TorrentTablePro
           "px-4 pb-2 text-[0.6rem] font-bold tracking-[0.14em] text-muted-foreground/70 uppercase",
         )}
       >
-        <span className="pl-6">Name</span>
-        <span>Progress</span>
-        <span className="text-right">Size</span>
-        <span>Time left</span>
-        <span className="text-right">Seeds</span>
-        <span className="text-right">Peers</span>
+        <span className="pl-6">{t("table.name")}</span>
+        <span>{t("table.progress")}</span>
+        <span className="text-right">{t("table.size")}</span>
+        <span>{t("table.timeLeft")}</span>
+        <span className="text-right">{t("table.seeds")}</span>
+        <span className="text-right">{t("table.peers")}</span>
       </div>
 
       {torrents.length === 0 ? (
         <div className="flex flex-1 flex-col items-center justify-center gap-2 text-muted-foreground">
           <Inbox className="size-8" />
-          <span className="text-sm font-semibold">Nothing here yet</span>
-          <span className="text-xs">Add a .torrent file or a magnet link from Options.</span>
+          <span className="text-sm font-semibold">{t("table.emptyTitle")}</span>
+          <span className="text-xs">{t("table.emptyHint")}</span>
         </div>
       ) : (
         <div className="flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto">
-          {torrents.map((t) => (
+          {torrents.map((torrent) => (
             <Row
-              key={t.id}
-              torrent={t}
-              selected={t.id === selectedId}
-              onSelect={() => onSelect(t.id)}
+              key={torrent.id}
+              torrent={torrent}
+              selected={torrent.id === selectedId}
+              onSelect={() => onSelect(torrent.id)}
             />
           ))}
         </div>
@@ -76,11 +80,11 @@ function statusIcon(t: TorrentSummary): { icon: LucideIcon; className: string } 
   }
 }
 
-function timeLeft(t: TorrentSummary): string {
-  if (t.state === "error") return "Error";
-  if (t.state === "checking") return "Checking";
-  if (t.progress >= 1) return t.state === "seeding" ? "Seeding" : "Completed";
-  if (t.state === "paused") return "Paused";
+function timeLeft(t: TorrentSummary, tr: TFunction): string {
+  if (t.state === "error") return tr("state.error");
+  if (t.state === "checking") return tr("state.checking");
+  if (t.progress >= 1) return tr(t.state === "seeding" ? "state.seeding" : "state.completed");
+  if (t.state === "paused") return tr("state.paused");
   return formatEta(t.eta);
 }
 
@@ -93,6 +97,7 @@ function Row({
   selected: boolean;
   onSelect: () => void;
 }) {
+  const { t: tr } = useTranslation();
   const { icon: Icon, className: iconClass } = statusIcon(t);
   const inactive = t.state === "paused";
   const done = t.progress >= 1;
@@ -131,7 +136,7 @@ function Row({
 
           <span className="text-right">{formatBytes(t.totalBytes)}</span>
           <span className={cn(done && "text-success", inactive && !done && "text-muted-foreground")}>
-            {timeLeft(t)}
+            {timeLeft(t, tr)}
           </span>
           <span className="text-right">{t.seeds}</span>
           <span className="text-right">{t.peers}</span>
@@ -140,14 +145,16 @@ function Row({
 
       {/* Actions are wired up in M1 together with the engine commands. */}
       <ContextMenuContent className="w-48">
-        <ContextMenuItem disabled>{t.state === "paused" ? "Resume" : "Pause"}</ContextMenuItem>
-        <ContextMenuItem disabled>Open folder</ContextMenuItem>
+        <ContextMenuItem disabled>
+          {tr(t.state === "paused" ? "actions.resume" : "actions.pause")}
+        </ContextMenuItem>
+        <ContextMenuItem disabled>{tr("actions.openFolder")}</ContextMenuItem>
         <ContextMenuSeparator />
         <ContextMenuItem disabled variant="destructive">
-          Remove
+          {tr("actions.remove")}
         </ContextMenuItem>
         <ContextMenuItem disabled variant="destructive">
-          Remove with files
+          {tr("actions.removeWithFiles")}
         </ContextMenuItem>
       </ContextMenuContent>
     </ContextMenu>

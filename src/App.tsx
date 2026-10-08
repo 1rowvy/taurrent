@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Sidebar, type Selection, type StatusFilter } from "@/components/layout/sidebar";
 import { Titlebar } from "@/components/layout/titlebar";
 import { TorrentTable } from "@/components/torrents/torrent-table";
@@ -7,7 +7,7 @@ import { TransferStats } from "@/components/transfer/transfer-stats";
 import { useSettings } from "@/hooks/use-settings";
 import { useTheme } from "@/hooks/use-theme";
 import { useTorrents } from "@/hooks/use-torrents";
-import { categoryOf } from "@/lib/categories";
+import { applyLanguage } from "@/i18n";
 import type { TorrentSummary } from "@/lib/types";
 import { SettingsView } from "@/views/settings-view";
 
@@ -23,7 +23,9 @@ function App() {
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const { theme, setTheme } = useTheme();
   const { torrents, stats, history } = useTorrents();
-  const { settings, error, setDownloadDir, setNotifications } = useSettings();
+  const { settings, error, setDownloadDir, setNotifications, setLanguage } = useSettings();
+
+  useEffect(() => applyLanguage(settings?.language), [settings?.language]);
 
   const counts = useMemo(
     () =>
@@ -33,13 +35,8 @@ function App() {
     [torrents],
   );
 
-  const visible = torrents.filter((t) =>
-    selection.kind === "status"
-      ? STATUS_MATCH[selection.status](t)
-      : selection.kind === "category"
-        ? categoryOf(t.name) === selection.category
-        : true,
-  );
+  const visible =
+    selection.kind === "status" ? torrents.filter(STATUS_MATCH[selection.status]) : torrents;
 
   const selected = torrents.find((t) => t.id === selectedId) ?? visible[0] ?? null;
 
@@ -60,7 +57,12 @@ function App() {
 
         <main className="mr-2 mb-2 flex min-w-0 flex-1 flex-col overflow-hidden rounded-xl bg-card">
           {selection.kind === "settings" ? (
-            <SettingsView settings={settings} error={error} onDownloadDirChange={setDownloadDir} />
+            <SettingsView
+              settings={settings}
+              error={error}
+              onDownloadDirChange={setDownloadDir}
+              onLanguageChange={setLanguage}
+            />
           ) : (
             <>
               <div className="flex min-h-0 flex-1 flex-col px-3 pt-5">

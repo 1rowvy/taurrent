@@ -1,21 +1,20 @@
 import type { LucideIcon } from "lucide-react";
 import { ArrowDown, ArrowUp, Bell, CircleCheck, LayoutGrid, Moon, Settings2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Switch } from "@/components/ui/switch";
-import { CATEGORIES, type Category } from "@/lib/categories";
 import { cn } from "@/lib/utils";
 
 export type StatusFilter = "all" | "downloading" | "seeding" | "completed";
 
 export type Selection =
   | { kind: "status"; status: StatusFilter }
-  | { kind: "category"; category: Category }
   | { kind: "settings" };
 
-const STATUSES: { id: StatusFilter; label: string; icon: LucideIcon }[] = [
-  { id: "all", label: "Overview", icon: LayoutGrid },
-  { id: "downloading", label: "Downloading", icon: ArrowDown },
-  { id: "seeding", label: "Seeding", icon: ArrowUp },
-  { id: "completed", label: "Completed", icon: CircleCheck },
+const STATUSES: { id: StatusFilter; icon: LucideIcon }[] = [
+  { id: "all", icon: LayoutGrid },
+  { id: "downloading", icon: ArrowDown },
+  { id: "seeding", icon: ArrowUp },
+  { id: "completed", icon: CircleCheck },
 ];
 
 interface SidebarProps {
@@ -37,14 +36,16 @@ export function Sidebar({
   notifications,
   onNotificationsChange,
 }: SidebarProps) {
+  const { t } = useTranslation();
+
   return (
     <aside className="flex w-56 shrink-0 flex-col gap-7 overflow-y-auto px-3 pt-4 pb-5">
-      <Section title="Overview">
+      <Section title={t("sidebar.overview")}>
         {STATUSES.map((s) => (
           <Item
             key={s.id}
             icon={s.icon}
-            label={s.label}
+            label={t(`sidebar.${s.id}`)}
             active={selection.kind === "status" && selection.status === s.id}
             onClick={() => onSelect({ kind: "status", status: s.id })}
             badge={counts[s.id]}
@@ -52,33 +53,27 @@ export function Sidebar({
         ))}
       </Section>
 
-      <Section title="Explorer">
-        {CATEGORIES.map((c) => (
-          <Item
-            key={c.id}
-            icon={c.icon}
-            label={c.label}
-            active={selection.kind === "category" && selection.category === c.id}
-            onClick={() => onSelect({ kind: "category", category: c.id })}
-          />
-        ))}
-      </Section>
 
-      <Section title="Settings" className="mt-auto">
+      <Section title={t("sidebar.settings")} className="mt-auto">
         <Item
           icon={Settings2}
-          label="Settings"
+          label={t("sidebar.settings")}
           active={selection.kind === "settings"}
           onClick={() => onSelect({ kind: "settings" })}
         />
         <ToggleItem
           icon={Bell}
-          label="Notifications"
+          label={t("sidebar.notifications")}
           checked={notifications ?? false}
           disabled={notifications === undefined}
           onChange={onNotificationsChange}
         />
-        <ToggleItem icon={Moon} label="Dark theme" checked={dark} onChange={onDarkChange} />
+        <ToggleItem
+          icon={Moon}
+          label={t("sidebar.darkTheme")}
+          checked={dark}
+          onChange={onDarkChange}
+        />
       </Section>
     </aside>
   );

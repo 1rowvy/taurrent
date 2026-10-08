@@ -1,27 +1,34 @@
-const UNITS = ["B", "KB", "MB", "GB", "TB"];
+import i18n from "@/i18n";
+
+function number(value: number, digits: number): string {
+  return new Intl.NumberFormat(i18n.language, {
+    minimumFractionDigits: digits,
+    maximumFractionDigits: digits,
+  }).format(value);
+}
 
 export function formatBytes(bytes: number, digits = 1): string {
-  if (bytes <= 0) return "0 B";
-  const i = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), UNITS.length - 1);
-  const value = bytes / 1024 ** i;
-  return `${value.toFixed(i === 0 ? 0 : digits)} ${UNITS[i]}`;
+  const units = i18n.t("units.bytes", { returnObjects: true }) as string[];
+  if (bytes <= 0) return `0 ${units[0]}`;
+  const i = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
+  return `${number(bytes / 1024 ** i, i === 0 ? 0 : digits)} ${units[i]}`;
 }
 
 export function formatSpeed(bytesPerSec: number): string {
-  return `${formatBytes(bytesPerSec)}/s`;
+  return `${formatBytes(bytesPerSec)}${i18n.t("units.perSecond")}`;
 }
 
 export function formatEta(seconds: number | null): string {
   if (seconds == null || !Number.isFinite(seconds)) return "∞";
-  if (seconds < 60) return `${Math.round(seconds)}s`;
+  const u = (k: "s" | "m" | "h" | "d") => i18n.t(`units.${k}`);
+  if (seconds < 60) return `${Math.round(seconds)}${u("s")}`;
   const m = Math.floor(seconds / 60);
-  if (m < 60) return `${m}m ${Math.round(seconds % 60)}s`;
+  if (m < 60) return `${m}${u("m")} ${Math.round(seconds % 60)}${u("s")}`;
   const h = Math.floor(m / 60);
-  if (h < 24) return `${h}h ${m % 60}m`;
-  return `${Math.floor(h / 24)}d ${h % 24}h`;
+  if (h < 24) return `${h}${u("h")} ${m % 60}${u("m")}`;
+  return `${Math.floor(h / 24)}${u("d")} ${h % 24}${u("h")}`;
 }
 
-export function fileExtension(name: string): string {
-  const dot = name.lastIndexOf(".");
-  return dot > 0 && name.length - dot <= 5 ? name.slice(dot + 1).toLowerCase() : "";
+export function formatRatio(value: number): string {
+  return number(value, 2);
 }

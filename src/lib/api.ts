@@ -9,6 +9,8 @@ export interface EngineStatus {
 export interface Settings {
   downloadDir: string;
   notifications: boolean;
+  /** `null` follows the system language. */
+  language: string | null;
 }
 
 export const api = {
@@ -16,4 +18,5 @@ export const api = {
   getSettings: () => invoke<Settings>("get_settings"),
   setDownloadDir: (path: string) => invoke<Settings>("set_download_dir", { path }),
   setNotifications: (enabled: boolean) => invoke<Settings>("set_notifications", { enabled }),
+  setLanguage: (language: string | null) => invoke<Settings>("set_language", { language }),
 };

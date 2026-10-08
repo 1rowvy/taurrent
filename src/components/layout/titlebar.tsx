@@ -2,6 +2,7 @@ import { isTauri } from "@tauri-apps/api/core";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { ChevronDown, Copy, Minus, Square, X } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Logo } from "@/components/brand/logo";
 import {
   DropdownMenu,
@@ -14,6 +15,8 @@ import {
 const appWindow = isTauri() ? getCurrentWindow() : null;
 
 export function Titlebar() {
+  const { t } = useTranslation();
+
   return (
     <header
       data-tauri-drag-region
@@ -23,15 +26,15 @@ export function Titlebar() {
 
       <DropdownMenu>
         <DropdownMenuTrigger className="flex items-center gap-1 rounded-md px-2 py-1 text-xs font-semibold text-muted-foreground hover:bg-muted hover:text-foreground">
-          Options <ChevronDown className="size-3.5" />
+          {t("titlebar.options")} <ChevronDown className="size-3.5" />
         </DropdownMenuTrigger>
         {/* Wired up in M1 together with the engine commands. */}
         <DropdownMenuContent align="start" className="w-52">
-          <DropdownMenuItem disabled>Add torrent file…</DropdownMenuItem>
-          <DropdownMenuItem disabled>Add magnet link…</DropdownMenuItem>
+          <DropdownMenuItem disabled>{t("titlebar.addFile")}</DropdownMenuItem>
+          <DropdownMenuItem disabled>{t("titlebar.addMagnet")}</DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem disabled>Resume all</DropdownMenuItem>
-          <DropdownMenuItem disabled>Pause all</DropdownMenuItem>
+          <DropdownMenuItem disabled>{t("titlebar.resumeAll")}</DropdownMenuItem>
+          <DropdownMenuItem disabled>{t("titlebar.pauseAll")}</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
 
@@ -43,6 +46,7 @@ export function Titlebar() {
 }
 
 function WindowControls() {
+  const { t } = useTranslation();
   const [maximized, setMaximized] = useState(false);
 
   useEffect(() => {
@@ -61,16 +65,16 @@ function WindowControls() {
 
   return (
     <div className="flex h-full">
-      <button className={btn} onClick={() => appWindow?.minimize()} aria-label="Minimize">
+      <button className={btn} onClick={() => appWindow?.minimize()} aria-label={t("titlebar.minimize")}>
         <Minus className="size-4" />
       </button>
-      <button className={btn} onClick={() => appWindow?.toggleMaximize()} aria-label="Maximize">
+      <button className={btn} onClick={() => appWindow?.toggleMaximize()} aria-label={t("titlebar.maximize")}>
         {maximized ? <Copy className="size-3.5 -scale-x-100" /> : <Square className="size-3.5" />}
       </button>
       <button
         className={`${btn} hover:bg-destructive hover:text-white`}
         onClick={() => appWindow?.close()}
-        aria-label="Close"
+        aria-label={t("titlebar.close")}
       >
         <X className="size-4" />
       </button>

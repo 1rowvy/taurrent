@@ -16,7 +16,12 @@ pub struct Settings {
     /// Show a system notification when a download finishes.
     #[serde(default = "default_true")]
     pub notifications: bool,
+    /// UI language code; `None` follows the system language.
+    #[serde(default)]
+    pub language: Option<String>,
 }
+
+pub const LANGUAGES: &[&str] = &["en", "ru"];
 
 fn default_true() -> bool {
     true
@@ -45,6 +50,7 @@ impl SettingsStore {
                     .download_dir()
                     .context("resolving download dir")?,
                 notifications: true,
+                language: None,
             },
             Err(e) => return Err(e).with_context(|| format!("reading {}", path.display())),
         };
@@ -68,6 +74,15 @@ impl SettingsStore {
 
     pub fn set_notifications(&self, enabled: bool) -> anyhow::Result<Settings> {
         self.update(|s| s.notifications = enabled)
+    }
+
+    pub fn set_language(&self, language: Option<String>) -> anyhow::Result<Settings> {
+        if let Some(lang) = &language
+            && !LANGUAGES.contains(&lang.as_str())
+        {
+            anyhow::bail!("unsupported language: {lang}");
+        }
+        self.update(|s| s.language = language)
     }
 
     fn update(&self, change: impl FnOnce(&mut Settings)) -> anyhow::Result<Settings> {
