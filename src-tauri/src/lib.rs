@@ -27,6 +27,16 @@ fn set_download_dir(
         .map_err(|e| format!("{e:#}"))
 }
 
+#[tauri::command]
+fn set_notifications(
+    settings: tauri::State<'_, SettingsStore>,
+    enabled: bool,
+) -> Result<Settings, String> {
+    settings
+        .set_notifications(enabled)
+        .map_err(|e| format!("{e:#}"))
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -45,7 +55,8 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             engine_status,
             get_settings,
-            set_download_dir
+            set_download_dir,
+            set_notifications
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

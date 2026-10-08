@@ -13,18 +13,20 @@ export interface TorrentSummary {
   state: TorrentState;
   downloadSpeed: number; // bytes/s
   uploadSpeed: number; // bytes/s
+  downloadedBytes: number;
+  uploadedBytes: number;
   eta: number | null; // seconds
+  elapsed: number; // seconds since added
+  seeds: number;
   peers: number;
 }
 
 export interface SessionStats {
-  downloadedBytes: number;
-  uploadedBytes: number;
   downloadSpeed: number;
   uploadSpeed: number;
 }
 
-export interface DiskSpace {
-  freeBytes: number;
-  totalBytes: number;
+export interface SpeedSample {
+  down: number;
+  up: number;
 }

@@ -13,6 +13,13 @@ use tauri::{AppHandle, Manager};
 pub struct Settings {
     /// Folder new torrents are saved to unless overridden when adding.
     pub download_dir: PathBuf,
+    /// Show a system notification when a download finishes.
+    #[serde(default = "default_true")]
+    pub notifications: bool,
+}
+
+fn default_true() -> bool {
+    true
 }
 
 /// Settings persisted as JSON in the app config dir.
@@ -37,6 +44,7 @@ impl SettingsStore {
                     .path()
                     .download_dir()
                     .context("resolving download dir")?,
+                notifications: true,
             },
             Err(e) => return Err(e).with_context(|| format!("reading {}", path.display())),
         };
@@ -55,9 +63,17 @@ impl SettingsStore {
         if !dir.is_dir() {
             anyhow::bail!("{} is not an existing folder", dir.display());
         }
+        self.update(|s| s.download_dir = dir.to_path_buf())
+    }
+
+    pub fn set_notifications(&self, enabled: bool) -> anyhow::Result<Settings> {
+        self.update(|s| s.notifications = enabled)
+    }
+
+    fn update(&self, change: impl FnOnce(&mut Settings)) -> anyhow::Result<Settings> {
         let mut current = self.current.write().unwrap();
         let mut next = current.clone();
-        next.download_dir = dir.to_path_buf();
+        change(&mut next);
         self.save(&next)?;
         *current = next.clone();
         Ok(next)

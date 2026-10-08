@@ -8,10 +8,12 @@ export interface EngineStatus {
 
 export interface Settings {
   downloadDir: string;
+  notifications: boolean;
 }
 
 export const api = {
   engineStatus: () => invoke<EngineStatus>("engine_status"),
   getSettings: () => invoke<Settings>("get_settings"),
   setDownloadDir: (path: string) => invoke<Settings>("set_download_dir", { path }),
+  setNotifications: (enabled: boolean) => invoke<Settings>("set_notifications", { enabled }),
 };

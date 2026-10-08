@@ -1,50 +1,80 @@
-import { useState } from "react";
-import { Plus } from "lucide-react";
-import { Sidebar, type View } from "@/components/layout/sidebar";
-import { Topbar } from "@/components/layout/topbar";
-import { useDashboard } from "@/hooks/use-dashboard";
+import { useMemo, useState } from "react";
+import { Sidebar, type Selection, type StatusFilter } from "@/components/layout/sidebar";
+import { Titlebar } from "@/components/layout/titlebar";
+import { TorrentTable } from "@/components/torrents/torrent-table";
+import { SpeedChart } from "@/components/transfer/speed-chart";
+import { TransferStats } from "@/components/transfer/transfer-stats";
+import { useSettings } from "@/hooks/use-settings";
 import { useTheme } from "@/hooks/use-theme";
-import { DashboardView } from "@/views/dashboard-view";
+import { useTorrents } from "@/hooks/use-torrents";
+import { categoryOf } from "@/lib/categories";
+import type { TorrentSummary } from "@/lib/types";
 import { SettingsView } from "@/views/settings-view";
-import { TorrentsView } from "@/views/torrents-view";
+
+const STATUS_MATCH: Record<StatusFilter, (t: TorrentSummary) => boolean> = {
+  all: () => true,
+  downloading: (t) => t.state === "downloading",
+  seeding: (t) => t.state === "seeding",
+  completed: (t) => t.progress >= 1,
+};
 
 function App() {
-  const [view, setView] = useState<View>("dashboard");
-  const [query, setQuery] = useState("");
-  const { theme, toggle } = useTheme();
-  const { torrents, stats, disk } = useDashboard();
+  const [selection, setSelection] = useState<Selection>({ kind: "status", status: "all" });
+  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const { theme, setTheme } = useTheme();
+  const { torrents, stats, history } = useTorrents();
+  const { settings, error, setDownloadDir, setNotifications } = useSettings();
 
-  const q = query.trim().toLowerCase();
-  const filtered = q ? torrents.filter((t) => t.name.toLowerCase().includes(q)) : torrents;
+  const counts = useMemo(
+    () =>
+      Object.fromEntries(
+        Object.entries(STATUS_MATCH).map(([k, match]) => [k, torrents.filter(match).length]),
+      ) as Record<StatusFilter, number>,
+    [torrents],
+  );
+
+  const visible = torrents.filter((t) =>
+    selection.kind === "status"
+      ? STATUS_MATCH[selection.status](t)
+      : selection.kind === "category"
+        ? categoryOf(t.name) === selection.category
+        : true,
+  );
+
+  const selected = torrents.find((t) => t.id === selectedId) ?? visible[0] ?? null;
 
   return (
-    <div className="flex h-full bg-background text-foreground">
-      <Sidebar view={view} onViewChange={setView} theme={theme} onToggleTheme={toggle} />
+    <div className="flex h-full flex-col bg-background text-foreground">
+      <Titlebar />
 
-      <div className="flex min-w-0 flex-1 flex-col">
-        <Topbar query={query} onQueryChange={setQuery} stats={stats} />
+      <div className="flex min-h-0 flex-1">
+        <Sidebar
+          selection={selection}
+          onSelect={setSelection}
+          counts={counts}
+          dark={theme === "dark"}
+          onDarkChange={(dark) => setTheme(dark ? "dark" : "light")}
+          notifications={settings?.notifications}
+          onNotificationsChange={setNotifications}
+        />
 
-        <main className="relative mr-4 mb-4 min-h-0 flex-1 overflow-hidden rounded-[2rem] bg-card">
-          <div className="h-full overflow-y-auto p-7 pb-24">
-            {view === "dashboard" && (
-              <DashboardView
-                torrents={filtered}
-                stats={stats}
-                disk={disk}
-                onSeeAll={() => setView("torrents")}
-              />
-            )}
-            {view === "torrents" && <TorrentsView torrents={filtered} />}
-            {view === "settings" && <SettingsView />}
-          </div>
-
-          {view !== "settings" && (
-            <button
-              className="absolute right-6 bottom-6 grid size-13 place-items-center rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/30 transition-transform hover:scale-105"
-              aria-label="Add torrent"
-            >
-              <Plus className="size-6" />
-            </button>
+        <main className="mr-2 mb-2 flex min-w-0 flex-1 flex-col overflow-hidden rounded-xl bg-card">
+          {selection.kind === "settings" ? (
+            <SettingsView settings={settings} error={error} onDownloadDirChange={setDownloadDir} />
+          ) : (
+            <>
+              <div className="flex min-h-0 flex-1 flex-col px-3 pt-5">
+                <TorrentTable
+                  torrents={visible}
+                  selectedId={selected?.id ?? null}
+                  onSelect={setSelectedId}
+                />
+              </div>
+              <div className="flex h-64 shrink-0 gap-6 border-t border-border px-6 py-5">
+                <SpeedChart history={history} />
+                <TransferStats torrent={selected} session={stats} />
+              </div>
+            </>
           )}
         </main>
       </div>
