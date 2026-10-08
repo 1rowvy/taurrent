@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::{path::PathBuf, sync::Arc};
 
 use anyhow::Context;
 use librqbit::{Session, SessionOptions, SessionPersistenceConfig};
@@ -19,11 +19,9 @@ pub struct EngineStatus {
 }
 
 impl Engine {
-    pub async fn start(app: &AppHandle) -> anyhow::Result<Self> {
-        let download_dir = app
-            .path()
-            .download_dir()
-            .context("resolving download dir")?;
+    /// `download_dir` only seeds the session default; per-torrent folders
+    /// come from `SettingsStore` via `AddTorrentOptions::output_folder`.
+    pub async fn start(app: &AppHandle, download_dir: PathBuf) -> anyhow::Result<Self> {
         let data_dir = app
             .path()
             .app_data_dir()

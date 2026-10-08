@@ -1,0 +1,75 @@
+use std::{
+    fs,
+    path::{Path, PathBuf},
+    sync::RwLock,
+};
+
+use anyhow::Context;
+use serde::{Deserialize, Serialize};
+use tauri::{AppHandle, Manager};
+
+#[derive(Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Settings {
+    /// Folder new torrents are saved to unless overridden when adding.
+    pub download_dir: PathBuf,
+}
+
+/// Settings persisted as JSON in the app config dir.
+pub struct SettingsStore {
+    path: PathBuf,
+    current: RwLock<Settings>,
+}
+
+impl SettingsStore {
+    pub fn load(app: &AppHandle) -> anyhow::Result<Self> {
+        let path = app
+            .path()
+            .app_config_dir()
+            .context("resolving app config dir")?
+            .join("settings.json");
+
+        let current = match fs::read(&path) {
+            Ok(bytes) => serde_json::from_slice(&bytes)
+                .with_context(|| format!("parsing {}", path.display()))?,
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => Settings {
+                download_dir: app
+                    .path()
+                    .download_dir()
+                    .context("resolving download dir")?,
+            },
+            Err(e) => return Err(e).with_context(|| format!("reading {}", path.display())),
+        };
+
+        Ok(Self {
+            path,
+            current: RwLock::new(current),
+        })
+    }
+
+    pub fn get(&self) -> Settings {
+        self.current.read().unwrap().clone()
+    }
+
+    pub fn set_download_dir(&self, dir: &Path) -> anyhow::Result<Settings> {
+        if !dir.is_dir() {
+            anyhow::bail!("{} is not an existing folder", dir.display());
+        }
+        let mut current = self.current.write().unwrap();
+        let mut next = current.clone();
+        next.download_dir = dir.to_path_buf();
+        self.save(&next)?;
+        *current = next.clone();
+        Ok(next)
+    }
+
+    fn save(&self, settings: &Settings) -> anyhow::Result<()> {
+        if let Some(parent) = self.path.parent() {
+            fs::create_dir_all(parent)?;
+        }
+        let tmp = self.path.with_extension("json.tmp");
+        fs::write(&tmp, serde_json::to_vec_pretty(settings)?)?;
+        fs::rename(&tmp, &self.path)?;
+        Ok(())
+    }
+}

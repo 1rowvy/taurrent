@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
-import { Plus, RefreshCw } from "lucide-react";
+import { Plus, RefreshCw, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { SettingsDialog } from "@/components/settings-dialog";
 import { api, type EngineStatus } from "@/lib/api";
 
 function App() {
   const [status, setStatus] = useState<EngineStatus | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   async function refresh() {
     try {
@@ -31,6 +33,9 @@ function App() {
           <Button size="sm" variant="outline" onClick={refresh}>
             <RefreshCw />
           </Button>
+          <Button size="sm" variant="outline" onClick={() => setSettingsOpen(true)}>
+            <Settings />
+          </Button>
         </div>
       </header>
 
@@ -46,6 +51,8 @@ function App() {
           <span>Starting engine…</span>
         )}
       </main>
+
+      <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
     </div>
   );
 }
